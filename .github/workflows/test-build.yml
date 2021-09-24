@@ -1,0 +1,36 @@
+name: Test Build
+
+on: [push, pull_request]
+
+jobs:
+  test-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macOS-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Setup node to install esy
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      # Install esy globally
+      - name: Install esy
+        run: |
+          npm install -g esy
+      # Checkout the projects sources
+      - uses: actions/checkout@v2
+
+      # Add an esyrc to set the cache path for esy.
+      # We do this because of this issue with esy: https://github.com/esy/esy/issues/1083
+      - name: Add esyrc
+        run: |
+          echo '{ "prefixPath": ".esy" }' > .esyrc
+      - uses: esy/github-action@master
+        with:
+          cache-key: ${{ matrix.os }}-${{ hashFiles('esy.lock/index.json') }}
+          esy-prefix: .esy
