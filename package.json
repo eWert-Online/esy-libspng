@@ -1,0 +1,59 @@
+{
+  "name": "esy-libspng",
+  "version": "0.6.3",
+  "description": "libspng-0.6.3 packaged for esy",
+  "esy": {
+    "buildsInSource": true,
+    "exportedEnv": {
+      "CFLAGS": {
+        "scope": "global",
+        "val": "-I#{self.install / 'include'} $CFLAGS"
+      },
+      "LDFLAGS": {
+        "scope": "global",
+        "val": "-L#{self.lib} -lspng $LDFLAGS"
+      },
+      "PKG_CONFIG_PATH": {
+        "scope": "global",
+        "val": "#{self.lib / 'pkgconfig' : $PKG_CONFIG_PATH }"
+      },
+      "SPNG_INCLUDE_PATH": {
+        "val": "#{self.install / 'include' }",
+        "scope": "global"
+      },
+      "SPNG_LIB_PATH": {
+        "val": "#{self.lib}",
+        "scope": "global"
+      }
+    },
+    "buildEnv": {
+      "CFLAGS": "-O3 -fPIC $CFLAGS",
+      "CPPFLAGS": "$CFLAGS",
+      "CC": "#{os == 'windows' ? 'x86_64-w64-mingw32-gcc' : ''}",
+      "CXX": "#{os == 'windows' ? 'x86_64-w64-mingw32-g++' : ''}",
+      "CXXFLAGS": "#{os == 'windows' ? '--std c++11' : ''}"
+    },
+    "build": [
+      [
+        "cmake",
+        "#{os == 'windows' ? '-DCMAKE_MAKE_PROGRAM=make' : ''}",
+        "#{os == 'windows' ? '-GUnix Makefiles' : ''}",
+        "#{os == 'windows' ? '-DCMAKE_HOST_WIN32=true' : ''}",
+        "-DZLIB_LIBRARY=#{esy-zlib.lib / 'libz.a'}",
+        "-DZLIB_INCLUDE_DIR=#{esy-zlib.install / 'include'}",
+        "-DCMAKE_BUILD_TYPE=RELEASE",
+        "-DCMAKE_INSTALL_PREFIX=#{self.install}",
+        "-S #{self.root}",
+        "-B #{self.target_dir}"
+      ],
+      "make -j4"
+    ],
+    "install": [
+      "make install"
+    ]
+  },
+  "dependencies": {
+    "esy-cmake": "eWert-Online/CMake#435dd07f98d41524b918620e7ced981224d7dd4a",
+    "esy-zlib": "esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f"
+  }
+}
