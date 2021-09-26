@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "esy-cmake": "eWert-Online/CMake#435dd07f98d41524b918620e7ced981224d7dd4a",
+    "esy-cmake": "Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869",
     "esy-zlib": "esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f"
   }
 }

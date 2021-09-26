@@ -1,0 +1,54 @@
+{
+  "checksum": "b07d3d1cf471afddbae66c84fa4c6606",
+  "root": "esy-libspng@link-dev:./package.json",
+  "node": {
+    "esy-zlib@github:esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f@d41d8cd9": {
+      "id":
+        "esy-zlib@github:esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f@d41d8cd9",
+      "name": "esy-zlib",
+      "version":
+        "github:esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f",
+      "source": {
+        "type": "install",
+        "source": [
+          "github:esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f"
+        ]
+      },
+      "overrides": [],
+      "dependencies": [],
+      "devDependencies": []
+    },
+    "esy-libspng@link-dev:./package.json": {
+      "id": "esy-libspng@link-dev:./package.json",
+      "name": "esy-libspng",
+      "version": "link-dev:./package.json",
+      "source": {
+        "type": "link-dev",
+        "path": ".",
+        "manifest": "package.json"
+      },
+      "overrides": [],
+      "dependencies": [
+        "esy-zlib@github:esy-packages/esy-zlib#65faba12e4aed539d8fd2444fede2f1136389f6f@d41d8cd9",
+        "esy-cmake@github:Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869@d41d8cd9"
+      ],
+      "devDependencies": []
+    },
+    "esy-cmake@github:Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869@d41d8cd9": {
+      "id":
+        "esy-cmake@github:Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869@d41d8cd9",
+      "name": "esy-cmake",
+      "version":
+        "github:Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869",
+      "source": {
+        "type": "install",
+        "source": [
+          "github:Et7f3/CMake#1cead3871bbb27a45adab2263ef2dff4a38a8869"
+        ]
+      },
+      "overrides": [],
+      "dependencies": [],
+      "devDependencies": []
+    }
+  }
+}
