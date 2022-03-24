@@ -483,7 +483,8 @@ static int set_chunks(spng_ctx *dst, spngt_chunk_data *spng)
 
 static int compare_chunks(spng_ctx *ctx, png_infop info_ptr, png_structp png_ptr, int after_idat)
 {
-    uint32_t i, ret = 0;
+    uint32_t i;
+    enum spng_errno ret = 0;
     spngt_chunk_data spng = {0};
     spngt_chunk_data png = {0};
 
@@ -968,7 +969,7 @@ static int compare_chunks(spng_ctx *ctx, png_infop info_ptr, png_structp png_ptr
         {
             if(spng.chunks[i].length != png_chunks[i].size)
             {
-                printf("chunk[%d]: size mismatch %" PRIu64 "(spng) %" PRIu64" (libpng)\n", i, spng.chunks[i].length, png_chunks[i].size);
+                printf("chunk[%d]: size mismatch %zu (spng) %zu (libpng)\n", i, spng.chunks[i].length, png_chunks[i].size);
                 ret = 1;
             }
 
@@ -1171,6 +1172,8 @@ static int spngt_run_test(const char *filename, struct spngt_test_case *test_cas
         if(ret) goto encode_cleanup;
 
         dst = spng_ctx_new(SPNG_CTX_ENCODER);
+
+        spng_set_option(dst, SPNG_ENCODE_TO_BUFFER, 1);
 
         ret = set_chunks(dst, &data);
         if(ret) goto encode_cleanup;
@@ -1409,7 +1412,7 @@ static int stream_write_checked(spng_ctx *ctx, void *user, void *data, size_t le
 static int extended_tests(FILE *file, int fmt)
 {
     uint32_t i;
-    int ret = 0;
+    enum spng_errno ret = 0;
     unsigned char *image = NULL;
     unsigned char *encoded = NULL;
     spng_ctx *enc = NULL;
@@ -1418,6 +1421,10 @@ static int extended_tests(FILE *file, int fmt)
     struct spng_ihdr ihdr = {0};
     struct spng_plte plte = {0};
     static unsigned char chunk_data[9000];
+
+    /* NOTE: This value is compressed to 2 bits by zlib, it's not a 1:1 mapping */
+    int compression_level = 0;
+    int expected_compression_level = 0;
 
     spng_set_png_file(dec, file);
 
@@ -1430,6 +1437,9 @@ static int extended_tests(FILE *file, int fmt)
     image = getimage_spng(dec, &image_size, fmt, 0);
 
     enc = spng_ctx_new(SPNG_CTX_ENCODER);
+
+    spng_set_option(enc, SPNG_ENCODE_TO_BUFFER, 1);
+    spng_set_option(enc, SPNG_IMG_COMPRESSION_LEVEL, compression_level);
 
     spng_set_ihdr(enc, &ihdr);
 
@@ -1470,6 +1480,31 @@ static int extended_tests(FILE *file, int fmt)
     }
 
     spng_ctx_free(enc);
+    enc = NULL;
+
+    /* Verify the image's zlib FLEVEL */
+    spng_ctx_free(dec);
+    dec = spng_ctx_new(0);
+
+    spng_set_png_buffer(dec, encoded, bytes_encoded);
+
+    spng_decode_image(dec, NULL, 0, SPNG_FMT_PNG, SPNG_DECODE_PROGRESSIVE);
+
+    ret = spng_get_option(dec, SPNG_IMG_COMPRESSION_LEVEL, &compression_level);
+
+    if(ret || (compression_level != expected_compression_level) )
+    {
+        if(ret) printf("error getting image compression level: %s\n", spng_strerror(ret));
+        else
+        {
+            printf("unexpected compression level (expected %d, got %d)\n",
+                    expected_compression_level,
+                    compression_level);
+            ret = 1;
+        }
+
+        goto cleanup;
+    }
 
     /* Reencode the same image but to a stream this time */
     enc = spng_ctx_new(SPNG_CTX_ENCODER);
@@ -1477,6 +1512,8 @@ static int extended_tests(FILE *file, int fmt)
     struct buf_state state = { .data = encoded, .bytes_left = bytes_encoded };
 
     spng_set_png_stream(enc, stream_write_checked, &state);
+
+    spng_set_option(enc, SPNG_IMG_COMPRESSION_LEVEL, compression_level);
 
     spng_set_ihdr(enc, &ihdr);
 
@@ -1520,6 +1557,14 @@ static int extended_tests(FILE *file, int fmt)
         ret = 1;
         goto cleanup;
     }
+
+    if(!ret)
+    {
+        printf("spng_get_png_buffer(): invalid return value\n");
+        ret = 1;
+        goto cleanup;
+    }
+    else ret = 0; /* clear the (expected) error */
 
     if(state.bytes_left)
     {

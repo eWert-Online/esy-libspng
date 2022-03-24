@@ -1,6 +1,6 @@
 # Data types
 
-# spng_crc_action
+## spng_crc_action
 ```c
 enum spng_crc_action
 {
@@ -16,7 +16,7 @@ enum spng_crc_action
 };
 ```
 
-# spng_decode_flags
+## spng_decode_flags
 ```c
 enum spng_decode_flags
 {
@@ -28,26 +28,6 @@ enum spng_decode_flags
     SPNG_DECODE_PROGRESSIVE = 256 /* Initialize for progressive reads */
 };
 ```
-
-# Supported format, flag combinations
-
-| PNG Format   | Output format     | Flags  | Notes                                         |
-|--------------|-------------------|--------|-----------------------------------------------|
-| Any format*  | `SPNG_FMT_RGBA8`  | All    | Convert from any PNG format and bit depth     |
-| Any format   | `SPNG_FMT_RGBA16` | All    | Convert from any PNG format and bit depth     |
-| Any format   | `SPNG_FMT_RGB8`   | All    | Convert from any PNG format and bit depth     |
-| Gray <=8-bit | `SPNG_FMT_G8`     | None** | Only valid for 1, 2, 4, 8-bit grayscale PNG's |
-| Gray 16-bit  | `SPNG_FMT_GA16`   | All**  | Only valid for 16-bit grayscale PNG's         |
-| Gray <=8-bit | `SPNG_FMT_GA8`    | All**  | Only valid for 1, 2, 4, 8-bit grayscale PNG's |
-| Any format   | `SPNG_FMT_PNG`    | None** | The PNG's format in host-endian               |
-| Any format   | `SPNG_FMT_RAW`    | None   | The PNG's format in big-endian                |
-
-
-\* Any combination of color type and bit depth defined in the [standard](https://www.w3.org/TR/2003/REC-PNG-20031110/#table111).
-
-\*\* Gamma correction is not implemented
-
-The `SPNG_DECODE_PROGRESSIVE` flag is supported in all cases.
 
 # Error handling
 
@@ -144,12 +124,26 @@ Moreover the size calculated by `spng_decoded_image_size()` can be checked
 against a hard limit before allocating memory for the output image.
 
 Chunks of arbitrary length (e.g. text, color profiles) take up additional memory,
-`spng_set_chunk_limits()` is used to set hard limits on chunk length- and cache limits,
-note that reaching either limit is handled as a fatal error.
+`spng_set_chunk_limits()` is used to set hard limits on chunk length and overall memory usage.
 
 Since v0.7.0 the `SPNG_CHUNK_COUNT_LIMIT` option controls how many chunks can be stored,
 the default is `1000` and is configurable through [`spng_set_option()`](context.md#spng_set_option),
 this limit is independent of the chunk cache limit.
+
+Note that exceeding any of the chunk limits is handled as an out-of-memory error.
+
+## Decoding untrusted files
+
+To decode untrusted files safely it is required to at least:
+
+* Set an upper limit on image dimensions with `spng_set_image_limits()`.
+
+* Use `spng_decoded_image_size()` to calculate the output image size
+ and check it against a constant limit.
+
+* Set a chunk size and chunk cache limit with `spng_set_chunks_limits()`
+  to control memory usage and avoid DoS from decompression bombs.
+
 
 # API
 
@@ -214,6 +208,78 @@ contain a tRNS chunk or is not applicable for the color type.
 
 This function can only be called once per context.
 
+## Supported format, flag combinations
+
+| PNG Format   | Output format     | Flags  | Notes                                         |
+|--------------|-------------------|--------|-----------------------------------------------|
+| Any format*  | `SPNG_FMT_RGBA8`  | All    | Convert from any PNG format and bit depth     |
+| Any format   | `SPNG_FMT_RGBA16` | All    | Convert from any PNG format and bit depth     |
+| Any format   | `SPNG_FMT_RGB8`   | All    | Convert from any PNG format and bit depth     |
+| Gray <=8-bit | `SPNG_FMT_G8`     | None** | Only valid for 1, 2, 4, 8-bit grayscale PNG's |
+| Gray 16-bit  | `SPNG_FMT_GA16`   | All**  | Only valid for 16-bit grayscale PNG's         |
+| Gray <=8-bit | `SPNG_FMT_GA8`    | All**  | Only valid for 1, 2, 4, 8-bit grayscale PNG's |
+| Any format   | `SPNG_FMT_PNG`    | None** | The PNG's format in host-endian               |
+| Any format   | `SPNG_FMT_RAW`    | None   | The PNG's format in big-endian                |
+
+
+\* Any combination of color type and bit depth defined in the [standard](https://www.w3.org/TR/2003/REC-PNG-20031110/#table111).
+
+\*\* Gamma correction is not implemented
+
+The `SPNG_DECODE_PROGRESSIVE` flag is supported in all cases.
+
+The alpha channel is always [straight alpha](https://en.wikipedia.org/wiki/Alpha_compositing#Straight_versus_premultiplied),
+premultiplied alpha is not supported.
+
+## Progressive image decoding
+
+If the `SPNG_DECODE_PROGRESSIVE` flag is set the decoder will be initialized
+with `fmt` and `flags` for progressive decoding, the values of `img`, `len` are ignored.
+
+Progressive decoding is straightforward when the image is not interlaced,
+calling [spng_decode_row()](#spng_decode_row) for each row of the image will yield
+the return value `SPNG_EOI` for the final row:
+
+```c
+int error;
+size_t image_width = image_size / ihdr.height;
+
+for(i = 0; i < ihdr.height; i++)
+{
+    void *row = image + image_width * i;
+
+    error = spng_decode_row(ctx, row, image_width);
+
+    if(error) break;
+}
+
+if(error == SPNG_EOI) /* success */
+```
+
+But for interlaced images rows are accessed multiple times and non-sequentially,
+use [spng_get_row_info()](context.md#spng_get_row_info) to get the current row number:
+
+```c
+int error;
+struct spng_row_info row_info;
+
+do
+{
+    error = spng_get_row_info(ctx, &row_info);
+    if(error) break;
+
+    void *row = image + image_width * row_info.row_num;
+
+    error = spng_decode_row(ctx, row, len);
+}
+while(!error)
+
+if(error == SPNG_EOI) /* success */
+```
+
+This is the recommended solution in all cases, for non-interlaced images `row_num` will increase
+linearly.
+
 # spng_decode_scanline()
 ```c
 int spng_decode_scanline(spng_ctx *ctx, void *out, size_t len)
@@ -248,3 +314,15 @@ For the last row and subsequent calls the return value is `SPNG_EOI`.
 If the image is not interlaced this function's behavior is identical to
 `spng_decode_scanline()`.
 
+# Decode options
+
+| Option                       | Default value | Description                                              |
+|------------------------------|---------------|----------------------------------------------------------|
+| `SPNG_KEEP_UNKNOWN_CHUNKS`   | `0`           | Set to keep or discard unknown chunks                    |
+| `SPNG_IMG_COMPRESSION_LEVEL` | `-1`          | May expose an estimate (0-9) after `spng_decode_image()` |
+| `SPNG_IMG_WINDOW_BITS`       | `15`*         | Set zlib window bits used for image decompression        |
+| `SPNG_CHUNK_COUNT_LIMIT`     | `1000`        | Limit shared by both known and unknown chunks            |
+
+\* Option may be optimized if not set explicitly.
+
+Options not listed here have no effect on decoders.

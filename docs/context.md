@@ -55,12 +55,15 @@ enum spng_format
     SPNG_FMT_G8 = 64,
 
     /* No conversion or scaling */
-    SPNG_FMT_PNG = 256, /* host-endian */
-    SPNG_FMT_RAW = 512  /* big-endian */
+    SPNG_FMT_PNG = 256,
+    SPNG_FMT_RAW = 512  /* big-endian (everything else is host-endian) */
 };
 ```
+!!! note
+    The channels are always in [byte-order](https://en.wikipedia.org/wiki/RGBA_color_model#RGBA8888) representation.
 
-The channels are always in [byte-order](https://en.wikipedia.org/wiki/RGBA_color_model#RGBA8888) representation.
+    The alpha channel is always [straight alpha](https://en.wikipedia.org/wiki/Alpha_compositing#Straight_versus_premultiplied),
+    premultiplied alpha is not supported.
 
 # spng_filter
 ```c
@@ -104,6 +107,8 @@ enum spng_option
     SPNG_TEXT_COMPRESSION_STRATEGY,
 
     SPNG_FILTER_CHOICE,
+    SPNG_CHUNK_COUNT_LIMIT,
+    SPNG_ENCODE_TO_BUFFER,
 };
 ```
 
@@ -218,9 +223,13 @@ int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
 
 Set `option` to the specified `value`.
 
+For details see [Decode options](decode.md#decode-options) and [Encode options](encode.md#encode-options).
+
 # spng_get_option()
 ```c
 int spng_get_option(spng_ctx *ctx, enum spng_option option, int *value)
 ```
 
 Get the value for the specified `option`.
+
+For details see [Decode options](decode.md#decode-options) and [Encode options](encode.md#encode-options).
