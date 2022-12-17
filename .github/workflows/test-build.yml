@@ -3,7 +3,7 @@ name: Test Build
 on: [push, pull_request]
 
 jobs:
-  test-build:
+  test-build-esy:
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +22,7 @@ jobs:
       - name: Install esy
         run: |
           npm install -g esy
+
       # Checkout the projects sources
       - uses: actions/checkout@v2
 
@@ -30,7 +31,29 @@ jobs:
       - name: Add esyrc
         run: |
           echo '{ "prefixPath": ".esy" }' > .esyrc
+
       - uses: esy/github-action@master
         with:
           cache-key: ${{ matrix.os }}-${{ hashFiles('esy.lock/index.json') }}
           esy-prefix: .esy
+  test-build-opam:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macOS-latest
+          - ubuntu-latest
+        ocaml-compiler:
+          - 4.14.x
+    runs-on: ${{ matrix.os }}
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      # Checkout the projects sources
+      - uses: actions/checkout@v2
+
+      - name: Install libspng
+        run: opam pin add . --working-dir --yes

@@ -1,0 +1,28 @@
+opam-version: "2.0"
+synopsis: "Simple, modern libpng alternative"
+maintainer: ["Torben Ewert"]
+author: ["randy408@protonmail.com"]
+license: "MIT"
+homepage: "https://github.com/eWert-Online/esy-libspng"
+bug-reports: "https://github.com/eWert-Online/esy-libspng/issues"
+depends: [
+  "conf-zlib" {build}
+  "conf-cmake" {build}
+]
+build-env: [
+  [CFLAGS += "-O3 -fPIC"]
+  [CPPFLAGS = "$CFLAGS"]
+]
+build: [
+  [
+    "%{conf-cmake:cmd}%"
+    "-DCMAKE_MAKE_PROGRAM=make" {os-family = "windows"}
+    "-GUnix Makefiles" {os-family = "windows"}
+    "-DCMAKE_HOST_WIN32=true" {os-family = "windows"}
+    "-DCMAKE_BUILD_TYPE=RELEASE"
+    "-DCMAKE_INSTALL_PREFIX=%{prefix}%"
+  ]
+  [make "-j%{jobs}%"]
+]
+install: [make "install"]
+dev-repo: "git+https://github.com/eWert-Online/esy-libspng.git"
