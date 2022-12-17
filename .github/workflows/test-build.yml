@@ -59,4 +59,4 @@ jobs:
       - run: opam install . --deps-only --with-doc --with-test
 
       - name: Install libspng
-        run: opam install .
+        run: opam install . --working-dir
