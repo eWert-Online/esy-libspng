@@ -48,13 +48,15 @@ jobs:
           - 4.14.x
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      # Checkout the projects sources
-      - uses: actions/checkout@v2
+      - run: opam install . --deps-only --with-doc --with-test
 
       - name: Install libspng
-        run: opam install . --working-dir --yes
+        run: opam install .
