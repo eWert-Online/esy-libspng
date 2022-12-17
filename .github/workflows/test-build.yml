@@ -57,4 +57,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install libspng
-        run: opam pin add . --working-dir --yes
+        run: opam install . --working-dir --yes
