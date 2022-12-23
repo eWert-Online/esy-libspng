@@ -10,8 +10,7 @@ depends: [
   "conf-cmake" {build}
 ]
 build-env: [
-  [CFLAGS += "-O3 -fPIC"]
-  [CPPFLAGS = "$CFLAGS"]
+  [CFLAGS = "-O3 -fPIC"]
 ]
 build: [
   [
