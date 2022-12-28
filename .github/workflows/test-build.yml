@@ -56,7 +56,5 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - run: opam install . --deps-only --with-doc --with-test
-
       - name: Install libspng
-        run: opam install . --working-dir
+        run: opam install . --working-dir -vvv

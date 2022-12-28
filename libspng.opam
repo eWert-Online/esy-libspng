@@ -20,6 +20,7 @@ build: [
     "-DCMAKE_HOST_WIN32=true" {os-family = "windows"}
     "-DCMAKE_BUILD_TYPE=RELEASE"
     "-DCMAKE_INSTALL_PREFIX=%{prefix}%"
+    "."
   ]
   [make "-j%{jobs}%"]
 ]
