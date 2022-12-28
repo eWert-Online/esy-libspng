@@ -11,7 +11,7 @@ then
     -DCMAKE_BUILD_TYPE=RELEASE \
     -DCMAKE_INSTALL_PREFIX="$(cygpath $prefix)" \
     -DCMAKE_MAKE_PROGRAM=make \
-    -GUnix Makefiles \
+    -GUnix\ Makefiles \
     -DCMAKE_HOST_WIN32=true \
     .
 else
