@@ -19,7 +19,8 @@ build: [
     "-GUnix Makefiles" {os-family = "windows"}
     "-DCMAKE_HOST_WIN32=true" {os-family = "windows"}
     "-DCMAKE_BUILD_TYPE=RELEASE"
-    "-DCMAKE_INSTALL_PREFIX=%{prefix}%"
+    "-DCMAKE_INSTALL_PREFIX=%{prefix}%" {os-family != "windows"}
+    "-DCMAKE_INSTALL_PREFIX=$(cygpath %{prefix}%)" {os-family = "windows"}
     "."
   ]
   [make "-j%{jobs}%"]
