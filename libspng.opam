@@ -13,16 +13,7 @@ build-env: [
   [CFLAGS = "-O3 -fPIC"]
 ]
 build: [
-  [
-    "%{conf-cmake:cmd}%"
-    "-DCMAKE_MAKE_PROGRAM=make" {os-family = "windows"}
-    "-GUnix Makefiles" {os-family = "windows"}
-    "-DCMAKE_HOST_WIN32=true" {os-family = "windows"}
-    "-DCMAKE_BUILD_TYPE=RELEASE"
-    "-DCMAKE_INSTALL_PREFIX=%{prefix}%" {os-family != "windows"}
-    "-DCMAKE_INSTALL_PREFIX=$(cygpath %{prefix}%)" {os-family = "windows"}
-    "."
-  ]
+  ["bash" "-ex" "build.sh" prefix "%{conf-cmake:cmd}%" os-family]
   [make "-j%{jobs}%"]
 ]
 install: [make "install"]
