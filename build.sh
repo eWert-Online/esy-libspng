@@ -1,10 +1,7 @@
 #!/bin/bash -ex
-
 prefix="$1"
 cmake="$2"
 os="$3"
-
-
 if [[ $os = "windows" ]]
 then
   "$cmake" \
