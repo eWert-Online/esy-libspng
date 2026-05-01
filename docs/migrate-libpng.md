@@ -13,7 +13,7 @@ Contexts are decoders by default, to create an encoder use `SPNG_CTX_ENCODER` as
 # Error handling
 
 All functions return zero on success and non-zero on error,
-decoding or encoding errors will invalidate the context and most subequent function calls will return
+decoding or encoding errors will invalidate the context and most subsequent function calls will return
 `SPNG_EBADSTATE` to signal this.
 
 See also: [Decoder error handling](decode.md#error-handling)
@@ -169,7 +169,7 @@ Some decode flags may affect the final image but never the size or the layout of
 
 ## Adding transparency
 
-This can be achieved by specifiying an output format with an alpha channel such as `SPNG_FMT_RGBA8` and the `SPNG_DECODE_TRNS` decode flag.
+This can be achieved by specifying an output format with an alpha channel such as `SPNG_FMT_RGBA8` and the `SPNG_DECODE_TRNS` decode flag.
 
 ```c
 ret = spng_decode_image(ctx, out, len, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS);
@@ -178,7 +178,7 @@ ret = spng_decode_image(ctx, out, len, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS);
 Note that using `SPNG_DECODE_TRNS` does not result in an error if the image does not have a tRNS chunk or
 is not applicable for the PNG format/output format combination, in those cases the flag is ignored.
 
-The `png_set_tRNS_to_alpha()` function applies a tranforms which
+The `png_set_tRNS_to_alpha()` function applies a transform which
 adds an alpha channel of the same bit depth if a tRNS chunk is present.
 It also implicitly converts indexed color images to 8-bit RGB,
 1/2/4-bit grayscale images to 8-bit grayscale and also adds an alpha channel
@@ -255,8 +255,8 @@ See also: [Progressive image decoding](decode.md#progressive-image-decoding)
 
 | libpng              | spng                                                   | Notes                               |
 |---------------------|--------------------------------------------------------|-------------------------------------|
-| `png_read_row()`    | [`spng_decode_row()`](encode.md#spng_decode_row)       |                                     |
-| `png_write_image()` | [`spng_encode_image()`](encode.md#spng_decode_image)   |                                     |
+| `png_read_row()`    | [`spng_decode_row()`](decode.md#spng_decode_row)       |                                     |
+| `png_read_image()`  | [`spng_decode_image()`](decode.md#spng_decode_image)   |                                     |
 | `png_read_info()`   | [`spng_decode_chunks()`](decode.md#spng_decode_chunks) | Optional, chunks are read on-demand |
 | `png_read_end()`    | [`spng_decode_chunks()`](decode.md#spng_decode_chunks) | Optional, chunks are read on-demand |
 

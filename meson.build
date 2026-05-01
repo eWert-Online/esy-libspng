@@ -1,5 +1,5 @@
 project('spng', 'c',
-    version : '0.7.3',
+    version : '0.7.4',
     license : [ 'BSD-2-Clause', 'libpng-2.0' ],
     default_options : 'c_std=c99'
 )
@@ -12,14 +12,16 @@ if get_option('default_library') == 'static'
     static_subproject = meson.is_subproject()
 endif
 
-if get_option('enable_opt') == false
-    add_project_arguments('-DSPNG_DISABLE_OPT', language : 'c')
-endif
-
 cc = meson.get_compiler('c')
 
+if get_option('enable_opt') == false
+    add_project_arguments('-DSPNG_DISABLE_OPT', language : 'c')
+elif cc.get_argument_syntax() == 'gcc' and host_machine.system() == 'x86'
+    add_project_arguments('-msse2', language : 'c')
+endif
+
 # Check for GNU target_clones attribute
-if cc.compiles(files('tests/target_clones.c'), args : '-Werror', name : 'have target_clones')
+if cc.links(files('tests/target_clones.c'), args : '-Werror', name : 'have target_clones')
     add_project_arguments('-DSPNG_ENABLE_TARGET_CLONES', language : 'c')
 endif
 
@@ -50,7 +52,7 @@ spng_lib = library('spng',
     c_args : spng_args,
     dependencies : spng_deps,
     install : not static_subproject,
-    version : '0.7.3'
+    version : '0.7.4'
 )
 
 spng_dep = declare_dependency(
@@ -81,6 +83,5 @@ pkg = import('pkgconfig')
 
 pkg.generate(spng_lib,
     extra_cflags : spng_args,
-    libraries_private : [ '-lm', '-lz' ],
     description : 'PNG decoding and encoding library'
 )

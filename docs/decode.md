@@ -141,7 +141,7 @@ To decode untrusted files safely it is required to at least:
 * Use `spng_decoded_image_size()` to calculate the output image size
  and check it against a constant limit.
 
-* Set a chunk size and chunk cache limit with `spng_set_chunks_limits()`
+* Set a chunk size and chunk cache limit with `spng_set_chunk_limits()`
   to control memory usage and avoid DoS from decompression bombs.
 
 
@@ -203,7 +203,7 @@ If the `SPNG_DECODE_PROGRESSIVE` flag is set the decoder will be
 initialized with `fmt` and `flags` for progressive decoding,
 the values of `out`, `len` are ignored.
 
-The `SPNG_DECODE_TNRS` flag is silently ignored if the PNG does not
+The `SPNG_DECODE_TRNS` flag is silently ignored if the PNG does not
 contain a tRNS chunk or is not applicable for the color type.
 
 This function can only be called once per context.
